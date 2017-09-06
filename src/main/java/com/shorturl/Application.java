@@ -1,12 +1,12 @@
-package com.shorturl.shorturl;
+package com.shorturl;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ShorturlApplication {
+public class Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ShorturlApplication.class, args);
+		SpringApplication.run(Application.class, args);
 	}
 }
