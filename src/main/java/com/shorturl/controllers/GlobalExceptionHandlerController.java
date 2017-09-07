@@ -3,6 +3,7 @@ package com.shorturl.controllers;
 import java.net.MalformedURLException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shorturl.exception.LabelAlreadyExistsException;
 import com.shorturl.exception.ShortenedUrlNotFoundException;
-import com.shorturl.exception.UninformedLabelException;
 import com.shorturl.infra.ErrorCodes;
 import com.shorurl.response.ShortUrlErrorResponse;
 
@@ -44,11 +44,10 @@ public class GlobalExceptionHandlerController {
     			ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_DESCRIPTION);
     }
 	
-	@ExceptionHandler(UninformedLabelException.class)
+	@ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ShortUrlErrorResponse handle(UninformedLabelException e) {
-		final String label = e.getMessage() != null ? e.getMessage() : "";
-        return new ShortUrlErrorResponse(label,
+    public ShortUrlErrorResponse handle(MissingServletRequestParameterException e) {
+        return new ShortUrlErrorResponse("",
 				ErrorCodes.UNINFORMED_LABEL_ERROR_CODE, 
 				ErrorCodes.UNINFORMED_LABEL_ERROR_DESCRIPTION);
     }
