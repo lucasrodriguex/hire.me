@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +25,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.shorturl.infra.ErrorCodes;
 import com.shorturl.repository.ShortUrlRepository;
+import com.shorturl.services.ShortUrlService;
 import com.shorturl.util.Base62;
 
 @RunWith(SpringRunner.class)
@@ -32,6 +36,9 @@ public class ShorturlApplicationTests {
 	
 	@Autowired
 	private ShortUrlRepository repository;
+	
+	@Autowired
+	private ShortUrlService service;
 	
 	@Autowired
 	private WebApplicationContext webApplicationContext;
@@ -56,16 +63,20 @@ public class ShorturlApplicationTests {
 	@Test
 	public void shouldCreateShortUrlWithoutCustomLabelTest() throws Exception {
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH).param("url", DEFAULT_URL);
-		MockHttpServletResponse response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+		mockMvc.perform(requestBuilder).andExpect(status().isCreated())
+		.andExpect(jsonPath("$.label").value(service.getLabel()))
+		.andExpect(jsonPath("$.originalUrl").value(DEFAULT_URL));
 	}
 	
 	@Test
 	public void shouldCreateShortUrlWithCustomLabelTest() throws Exception {
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH).param("url", DEFAULT_URL)
-				.param("custom_label", DEFAULT_LABEL);
-		MockHttpServletResponse response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+		RequestBuilder requestBuilder = MockMvcRequestBuilders
+				.post(DEFAULT_PATH).param("url", DEFAULT_URL).param("custom_label", DEFAULT_LABEL);
+		
+		mockMvc.perform(requestBuilder).andExpect(status().isCreated())
+		.andExpect(jsonPath("$.label").value(DEFAULT_LABEL))
+		.andExpect(jsonPath("$.originalUrl").value(DEFAULT_URL));
+		
 		assertNotNull(repository.findByShortUrlLabel(DEFAULT_LABEL));
 	}
 	
@@ -73,20 +84,22 @@ public class ShorturlApplicationTests {
 	public void shouldNotCreateShortUrlWithCustomLabelIfExistsTest() throws Exception {
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH).param("url", DEFAULT_URL)
 				.param("custom_label", DEFAULT_LABEL);
-		MockHttpServletResponse response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.CREATED.value(), response.getStatus());
 		
-		requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH).param("url", DEFAULT_URL)
-				.param("custom_label", DEFAULT_LABEL);
-		response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
+		mockMvc.perform(requestBuilder).andExpect(status().isCreated());
+		
+		mockMvc.perform(requestBuilder).andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.label").value(DEFAULT_LABEL))
+		.andExpect(jsonPath("$.error_code").value(ErrorCodes.CUSTOM_LABEL_ALREADY_EXISTS_ERROR_CODE))
+		.andExpect(jsonPath("$.description").value(ErrorCodes.CUSTOM_LABEL_ALREADY_EXISTS_ERROR_DESCRIPTION));
 	}
 	
 	@Test
 	public void expectBadRequestIfTryToCreateShortUrlWithInvalidUrlTest() throws Exception {
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH).param("url", INVALID_URL);
-		MockHttpServletResponse response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
+		mockMvc.perform(requestBuilder).andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.label").value(""))
+		.andExpect(jsonPath("$.error_code").value(ErrorCodes.INVALID_URL_FORMAT_ERROR_CODE))
+		.andExpect(jsonPath("$.description").value(ErrorCodes.INVALID_URL_FORMAT_ERROR_DESCRIPTION));
 	}
 	
 	 /** 
@@ -97,29 +110,62 @@ public class ShorturlApplicationTests {
 	@Test
 	public void shouldReturnNotFoundWithEmptyLabelTest() throws Exception {
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.get(DEFAULT_PATH).param("label", "");
-		MockHttpServletResponse response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
+		
+		mockMvc.perform(requestBuilder).andExpect(status().isNotFound())
+		.andExpect(jsonPath("$.label").value(""))
+		.andExpect(jsonPath("$.error_code").value(ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_CODE))
+		.andExpect(jsonPath("$.description").value(ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_DESCRIPTION));
 	}
 	
 	@Test
 	public void shouldReturnBadRequestWithNullLabelTest() throws Exception {
 		String label = null;
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.get(DEFAULT_PATH).param("label", label);
-		MockHttpServletResponse response = getRequestResponseFromBuilder(requestBuilder);
-		assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
+		
+		mockMvc.perform(requestBuilder).andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.label").value(""))
+		.andExpect(jsonPath("$.error_code").value(ErrorCodes.UNINFORMED_LABEL_ERROR_CODE))
+		.andExpect(jsonPath("$.description").value(ErrorCodes.UNINFORMED_LABEL_ERROR_DESCRIPTION));
 	}
 			
 	
 	@Test
 	public void shouldReturnCreatedLabelTest() throws Exception {
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH)
+															.param("url", DEFAULT_URL)
+															.param("custom_label", DEFAULT_LABEL);
+		mockMvc.perform(requestBuilder).andExpect(status().isCreated())
+		.andExpect(jsonPath("$.label").value(service.getLabel()))
+		.andExpect(jsonPath("$.originalUrl").value(DEFAULT_URL));
+		
+		requestBuilder = MockMvcRequestBuilders.get(DEFAULT_PATH).param("label", DEFAULT_LABEL);
+		mockMvc.perform(requestBuilder).andExpect(status().isCreated())
+		.andExpect(jsonPath("$.shortUrlLabel").value(DEFAULT_LABEL))
+		.andExpect(jsonPath("$.originalUrl").value(DEFAULT_URL))
+		.andExpect(jsonPath("$.views").value(0));
+	}
+	
+	/**
+	 * REDIRECT TESTES
+	 */
+	
+	@Test
+	public void shouldRedirectToCreatedLabelTest() throws Exception {
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(DEFAULT_PATH).param("url", DEFAULT_URL)
 				.param("custom_label", DEFAULT_LABEL);
 		mockMvc.perform(requestBuilder);
 		
-		requestBuilder = MockMvcRequestBuilders.get(DEFAULT_PATH).param("label", DEFAULT_LABEL);
-		mockMvc.perform(requestBuilder).andExpect(jsonPath("$.shortUrlLabel").value(DEFAULT_LABEL))
-		.andExpect(jsonPath("$.originalUrl").value(DEFAULT_URL))
-		.andExpect(jsonPath("$.views").value(0));
+		requestBuilder = MockMvcRequestBuilders.get("/"+DEFAULT_LABEL);
+		mockMvc.perform(requestBuilder).andExpect(status().isFound()).andExpect(redirectedUrl(DEFAULT_URL));
+	}
+	
+	@Test
+	public void shouldReturnNotFoundIfShortUrlNotExistsTest() throws Exception {
+		RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/asdf");
+		mockMvc.perform(requestBuilder).andExpect(status().isNotFound())
+					.andExpect(jsonPath("$.label").value("asdf"))
+					.andExpect(jsonPath("$.error_code").value(ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_CODE))
+					.andExpect(jsonPath("$.description").value(ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_DESCRIPTION));
 	}
 	
 	@Test
@@ -138,12 +184,6 @@ public class ShorturlApplicationTests {
 	@Test
 	public void whenNumberToConvertIsZeroExpectedZero() {
 		assertEquals("0", Base62.convertDecimalToBase62(0));
-	}
-	
-	private MockHttpServletResponse getRequestResponseFromBuilder(RequestBuilder requestBuilder) throws Exception {
-		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		return response;
 	}
 
 	@Test
