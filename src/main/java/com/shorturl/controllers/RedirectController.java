@@ -30,7 +30,7 @@ public class RedirectController {
 	private ShortUrlService service;
 	
 	@GetMapping("/{label}")
-	public ResponseEntity<?> redirectToOriginalUrl(HttpServletResponse response, @PathVariable("label") String label) throws IOException, URISyntaxException{
+	public ResponseEntity<?> redirectToOriginalUrl(@PathVariable("label") String label) throws IOException, URISyntaxException{
 		if(label == null) {
 			throw new UninformedLabelException();
 		}
