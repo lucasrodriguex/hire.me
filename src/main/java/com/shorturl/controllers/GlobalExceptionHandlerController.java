@@ -23,17 +23,16 @@ public class GlobalExceptionHandlerController {
     public ShortUrlErrorResponse handle(LabelAlreadyExistsException e) {
 		final String label = e.getMessage() != null ? e.getMessage() : "";
         return new ShortUrlErrorResponse(label,
-				ErrorCodes.ERROR_001_CODE, 
-				ErrorCodes.ERROR_001_DESCRIPTION);
+				ErrorCodes.CUSTOM_LABEL_ALREADY_EXISTS_ERROR_CODE, 
+				ErrorCodes.CUSTOM_LABEL_ALREADY_EXISTS_ERROR_DESCRIPTION);
     }
 	
 	@ExceptionHandler(MalformedURLException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ShortUrlErrorResponse handle(MalformedURLException e) {
-		final String label = e.getMessage() != null ? e.getMessage() : "";
-        return new ShortUrlErrorResponse(label,
-				ErrorCodes.ERROR_002_CODE, 
-				ErrorCodes.ERROR_002_DESCRIPTION);
+        return new ShortUrlErrorResponse("",
+				ErrorCodes.INVALID_URL_FORMAT_ERROR_CODE, 
+				ErrorCodes.INVALID_URL_FORMAT_ERROR_DESCRIPTION);
     }
 	
 	@ExceptionHandler(ShortenedUrlNotFoundException.class)
@@ -41,8 +40,8 @@ public class GlobalExceptionHandlerController {
     public ShortUrlErrorResponse handle(RuntimeException e) {
 		final String label = e.getMessage() != null ? e.getMessage() : "";
         return new ShortUrlErrorResponse(label,
-    			ErrorCodes.ERROR_003_CODE, 
-    			ErrorCodes.ERROR_003_DESCRIPTION);
+    			ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_CODE, 
+    			ErrorCodes.SHORTENED_URL_NOT_FOUND_ERROR_DESCRIPTION);
     }
 	
 	@ExceptionHandler(UninformedLabelException.class)
@@ -50,8 +49,8 @@ public class GlobalExceptionHandlerController {
     public ShortUrlErrorResponse handle(UninformedLabelException e) {
 		final String label = e.getMessage() != null ? e.getMessage() : "";
         return new ShortUrlErrorResponse(label,
-				ErrorCodes.ERROR_004_CODE, 
-				ErrorCodes.ERROR_004_DESCRIPTION);
+				ErrorCodes.UNINFORMED_LABEL_ERROR_CODE, 
+				ErrorCodes.UNINFORMED_LABEL_ERROR_DESCRIPTION);
     }
 
 }
