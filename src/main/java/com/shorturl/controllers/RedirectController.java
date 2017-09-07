@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.shorturl.entity.ShortUrl;
-import com.shorturl.infra.ErrorCodes;
+import com.shorturl.exception.ShortenedUrlNotFoundException;
+import com.shorturl.exception.UninformedLabelException;
 import com.shorturl.repository.ShortUrlRepository;
 import com.shorturl.services.ShortUrlService;
-import com.shorurl.response.ShortUrlErrorResponse;
 
 @Controller
 public class RedirectController {
@@ -32,13 +32,11 @@ public class RedirectController {
 	@GetMapping("/{label}")
 	public ResponseEntity<?> redirectToOriginalUrl(HttpServletResponse response, @PathVariable("label") String label) throws IOException, URISyntaxException{
 		if(label == null) {
-			return ResponseEntity.badRequest().body(new ShortUrlErrorResponse("", 
-					ErrorCodes.ERROR_004_CODE, ErrorCodes.ERROR_004_DESCRIPTION));
+			throw new UninformedLabelException();
 		}
 		ShortUrl url = repository.findByShortUrlLabel(label);
 		if(url == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ShortUrlErrorResponse(label, 
-					ErrorCodes.ERROR_003_CODE, ErrorCodes.ERROR_003_DESCRIPTION));
+			throw new ShortenedUrlNotFoundException(label);
 		}
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
