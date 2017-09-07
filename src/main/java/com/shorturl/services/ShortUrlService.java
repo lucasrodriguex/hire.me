@@ -4,31 +4,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.shorturl.entity.ShortUrl;
+import com.shorturl.exception.LabelAlreadyExistsException;
+import com.shorturl.exception.ShortenedUrlNotFoundException;
+import com.shorturl.exception.UninformedLabelException;
 import com.shorturl.repository.ShortUrlRepository;
+import com.shorturl.util.Base62;
 
 @Service
 public class ShortUrlService {
 	
 	@Autowired
-	private ShortUrlRepository shortUrlRepository;
+	private ShortUrlRepository repository;
 	
-	public void save(String customLabel, String originalUrl) {
-		if(customLabel == null) {
-			long lastIndex = shortUrlRepository.count();
-			String generatedHash = generateHash(lastIndex);
-			shortUrlRepository.save(new ShortUrl(generatedHash, originalUrl, 0L));
+	private String label;
+	
+	public void saveUrl(String customLabel, String originalUrl) {
+		this.label = customLabel;
+		if(label == null) {
+			long lastIndex = repository.count();
+			this.label = generateHash(lastIndex);
+			repository.save(new ShortUrl(this.label, originalUrl));
 		} else {
-			if(shortUrlRepository.findByShortUrlLabel(customLabel) != null) {
-				shortUrlRepository.save(new ShortUrl(customLabel, originalUrl, 0L));
+			if(repository.findByShortUrlLabel(label) != null) {
+				throw new LabelAlreadyExistsException(label);
 			} else {
-				throw new RuntimeException();
+				repository.save(new ShortUrl(label, originalUrl));
 			}
 		}
 	}
 	
 	private String generateHash(long lastIndex) {
 		String generatedHash = convertToBase62(lastIndex);
-		while(shortUrlRepository.findByShortUrlLabel(generatedHash) != null) { //verifica se ja existe uma label igual
+		while(repository.findByShortUrlLabel(generatedHash) != null) {
 			lastIndex++;
 			generatedHash = convertToBase62(lastIndex);
 		}
@@ -36,12 +43,31 @@ public class ShortUrlService {
 	}
 	
 	private String convertToBase62(long lastIndex) {
-		return "";
+		return Base62.convertDecimalToBase62(lastIndex);
 	}
 
 	public void updateViews(ShortUrl url) {
 		final long views = url.getViews() + 1;
 		url.setViews(views);
-		shortUrlRepository.save(url);
+		repository.save(url);
+	}
+	
+	public ShortUrl getShortUrlByLabel(String label) {
+		if (label == null) {
+			throw new UninformedLabelException();
+		}
+		ShortUrl shortUrl = repository.findByShortUrlLabel(label);
+		if(shortUrl == null) {
+			throw new ShortenedUrlNotFoundException(label);
+		}
+		return shortUrl;
+	}
+	
+	public String getLabel() {
+		return label;
+	}
+	
+	public void setLabel(String label) {
+		this.label = label;
 	}
 }

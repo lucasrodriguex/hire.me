@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class ShortUrl implements Serializable {
 
@@ -13,6 +15,7 @@ public class ShortUrl implements Serializable {
 	
 	@Id
 	@GeneratedValue
+	@JsonIgnore
 	private Long id;
 	
 	private String shortUrlLabel;
@@ -21,10 +24,10 @@ public class ShortUrl implements Serializable {
 	
 	public ShortUrl() {}
 	
-	public ShortUrl (final String label, final String originalUrl, Long views) {
+	public ShortUrl (String label, String originalUrl) {
 		this.shortUrlLabel = label;
 		this.originalUrl = originalUrl;
-		this.views = views;
+		this.views = 0L;
 	}
 
 	public Long getId() {
@@ -35,11 +38,11 @@ public class ShortUrl implements Serializable {
 		this.id = id;
 	}
 
-	public String getShortUrl() {
+	public String getShortUrlLabel() {
 		return shortUrlLabel;
 	}
 
-	public void setShortUrl(String shortUrl) {
+	public void setShortUrlLabel(String shortUrl) {
 		this.shortUrlLabel = shortUrl;
 	}
 
@@ -58,5 +61,4 @@ public class ShortUrl implements Serializable {
 	public void setViews(Long views) {
 		this.views = views;
 	}
-	
 }
