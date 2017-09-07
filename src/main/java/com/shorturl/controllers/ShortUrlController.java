@@ -28,8 +28,8 @@ public class ShortUrlController {
 	private ShortUrlRepository repository;
 	
 	@PostMapping("/shorturl")
-	public ResponseEntity<?> insert(@RequestParam String url, 
-								   @RequestParam(value="custom_label", required=false) String customLabel) throws MalformedURLException {
+	public ResponseEntity<?> insert(@RequestParam final String url, 
+								   @RequestParam(value="custom_label", required=false) final String customLabel) throws MalformedURLException {
 		final long initialTime = System.currentTimeMillis();
 		
 		new URL(url);
@@ -52,12 +52,6 @@ public class ShortUrlController {
 	@GetMapping(value = "/shorturl/topTenViews")
 	public ResponseEntity<?> getTopTenViews() {
 		List<ShortUrl> shorturl = repository.findTop10ByOrderByViewsDesc();
-		return ResponseEntity.ok().body(shorturl);		
-	}
-	
-	@GetMapping(value = "/shorturl/findAll")
-	public ResponseEntity<?> getAll() {
-		List<ShortUrl> shorturl = (List<ShortUrl>) repository.findAll();
 		return ResponseEntity.ok().body(shorturl);		
 	}
 	

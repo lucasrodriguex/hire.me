@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.shorturl.entity.ShortUrl;
 import com.shorturl.exception.ShortenedUrlNotFoundException;
-import com.shorturl.exception.UninformedLabelException;
 import com.shorturl.repository.ShortUrlRepository;
 import com.shorturl.services.ShortUrlService;
 
@@ -29,11 +26,8 @@ public class RedirectController {
 	@Autowired
 	private ShortUrlService service;
 	
-	@GetMapping("/{label}")
+	@GetMapping("/u/{label}")
 	public ResponseEntity<?> redirectToOriginalUrl(@PathVariable("label") String label) throws IOException, URISyntaxException{
-		if(label == null) {
-			throw new UninformedLabelException();
-		}
 		ShortUrl url = repository.findByShortUrlLabel(label);
 		if(url == null) {
 			throw new ShortenedUrlNotFoundException(label);

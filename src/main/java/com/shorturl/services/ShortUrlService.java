@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import com.shorturl.entity.ShortUrl;
 import com.shorturl.exception.LabelAlreadyExistsException;
 import com.shorturl.exception.ShortenedUrlNotFoundException;
-import com.shorturl.exception.UninformedLabelException;
 import com.shorturl.repository.ShortUrlRepository;
 import com.shorturl.util.Base62;
 
@@ -53,9 +52,6 @@ public class ShortUrlService {
 	}
 	
 	public ShortUrl getShortUrlByLabel(String label) {
-		if (label == null) {
-			throw new UninformedLabelException();
-		}
 		ShortUrl shortUrl = repository.findByShortUrlLabel(label);
 		if(shortUrl == null) {
 			throw new ShortenedUrlNotFoundException(label);
@@ -66,8 +62,5 @@ public class ShortUrlService {
 	public String getLabel() {
 		return label;
 	}
-	
-	public void setLabel(String label) {
-		this.label = label;
-	}
+
 }
