@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +20,7 @@ import com.shorturl.services.ShortUrlService;
 import com.shorurl.response.ShortUrlSuccessResponse;
 
 @RestController
+@RequestMapping("/shorturl")
 public class ShortUrlController {
 	
 	@Autowired
@@ -27,7 +29,7 @@ public class ShortUrlController {
 	@Autowired
 	private ShortUrlRepository repository;
 	
-	@PostMapping("/shorturl")
+	@PostMapping
 	public ResponseEntity<?> insert(@RequestParam final String url, 
 								   @RequestParam(value="custom_label", required=false) final String customLabel) throws MalformedURLException {
 		final long initialTime = System.currentTimeMillis();
@@ -43,13 +45,13 @@ public class ShortUrlController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ShortUrlSuccessResponse(service.getLabel(), url, statistics));
 	}
 	
-	@GetMapping(value = "/shorturl")
+	@GetMapping
 	public ResponseEntity<?> read(@RequestParam String label) {
 		ShortUrl shortUrl = service.getShortUrlByLabel(label);
 		return ResponseEntity.ok().body(shortUrl);
 	}
 	
-	@GetMapping(value = "/shorturl/topTenViews")
+	@GetMapping("/topTenViews")
 	public ResponseEntity<?> getTopTenViews() {
 		List<ShortUrl> shorturl = repository.findTop10ByOrderByViewsDesc();
 		return ResponseEntity.ok().body(shorturl);		
