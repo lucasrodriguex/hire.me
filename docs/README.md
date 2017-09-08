@@ -2,7 +2,7 @@
 * Linguagem de programação: Java
 * Framework: Spring boot
 * Banco de dados: Mysql
-* Front-end: Bootstrap e JQuery no front-end
+* Front-end: Bootstrap e JQuery
 
 ## Bonus points checklist
 - [x] Crie testcases para todas as funcionalidades criadas
