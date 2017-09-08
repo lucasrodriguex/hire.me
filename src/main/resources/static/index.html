@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Short your URL</title>
+    
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/jquery-3.2.1.min.js"></script>
+    
+    <style>
+    		header {margin-top: 10%; margin-bottom: 5%; text-align:center;}
+    		#form-url {margin-bottom: 3%}
+    		#url-field, #label-field {margin: 0 auto ; width: 50%}
+    		.alert {margin: 0 auto; padding: 5px; width: 25%;}
+    </style>
+    
+</head>
+<body>
+	<header>
+		<h2>Short your url</h2>
+		<p>Paste a url to shorten it</p>
+	</header>
+    <div class="container">
+        <div class="text-center">
+            <form role="search" id="form-url">
+                <div class="form-group">
+                   <span>Paste your URL:</span> <input id="url-field" type="text" class="form-control" placeholder="Enter your url..." required>
+                </div>
+                <div class="form-group">
+                    <span>Custom label (optional):</span> <input id="label-field" type="text" class="form-control" placeholder="Enter custom label (optional)...">
+                </div>
+                <button type="submit" class="btn btn-danger">Create</button>
+            </form>
+            
+            <div id="success-message" class="alert alert-success" role="alert" style="display:none">
+				<span></span> <br> <a href="#" target="_blank"></a>
+            </div>
+            
+            <div id="error-message" class="alert alert-danger" role="alert" style="display:none">
+				<span></span>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script>
+    
+    $("#form-url").submit(function(event){
+    		event.preventDefault();
+    		var urlField = $("#url-field").val();
+    		var labelField = $("#label-field").val();
+    		
+    		var parameters = labelField == "" ? {url: urlField} : {url: urlField, custom_label: labelField};
+    		
+	    $.ajax({
+			url: location.href + "shorturl",
+			method: "POST",
+			dataType: "json",
+			data: parameters,
+			success: function(result) {
+				$("#error-message").hide();
+				$("#success-message span").text("Url created successfully");
+				$("#success-message a").text(location.href + "u/" + result.label);
+				$("#success-message a").attr("href", location.href + "u/" + result.label);
+				$("#success-message").show();
+				console.log(result)
+			},
+			error: function(result) {
+				$("#success-message").hide();
+				$("#error-message span").text(result.responseJSON.description);
+				$("#error-message").show();
+			}
+		});
+    });
+    
+    
+    </script>
+    
+    
+</body>
+</html>
