@@ -1,8 +1,8 @@
 ## Stack utilizado
-Java
-Spring boot
-Mysql
-Bootstrap e JQuery no front-end 
+* Linguagem de programação: Java
+* Framework: Spring boot
+* Banco de dados: Mysql
+* Front-end: Bootstrap e JQuery no front-end
 
 ## Bonus points checklist
 - [x] Crie testcases para todas as funcionalidades criadas
@@ -21,7 +21,7 @@ A ideia foi utilizar o ID gerado automaticamente pelo banco de dados (auto incre
 Foi necessário criar um tratamento para que caso exista um hash igual a uma custom label já criada no banco seja gerado um novo hash. Este loop acontece até que seja possível salvar o novo hash gerado no banco de dados
 
 ## Testes unitários
-Os testes unitários foram feitos utilzando o MockMvc, que facilita bastante a implementação de testes unitários.
+Os testes unitários foram feitos utilzando o JUnit com MockMvc, que facilita bastante a implementação de testes unitários no Spring.
 
 ## Tratamento de exception
 Foi criado um controller para tratar as exceptions automaticamente utilizando a anotação @ExceptionHandler, gosto de implementar dessa maneira pois melhora muito a organização e a legibilidade do código, além de eliminar a necessidade de colocar vários blocos de try/catch no código
